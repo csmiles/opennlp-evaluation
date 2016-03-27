@@ -2,6 +2,7 @@ package csmiles.opennlp;
 
 import com.google.common.collect.Lists;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -42,6 +43,25 @@ public class PartsOfSpeech {
         }
 
         return result;
+    }
+
+    public List<List<String>> getChunk(String tag) {
+        LinkedList<List<String>> filteredChunks = Lists.newLinkedList();
+
+        for (Chunk chunk : chunks) {
+            String nextChunkTag = chunk.chunkTags[0];
+            ChunkState state = ChunkState.PRE_CHUNK_TAG.next(tag, null, nextChunkTag, filteredChunks);
+            for (int i = 0; i < chunk.tokens.length; i++) {
+                nextChunkTag = null;
+                if (i + 1 < chunk.chunkTags.length) {
+                    nextChunkTag = chunk.chunkTags[i + 1];
+                }
+
+                state = state.next(tag, chunk.tokens[i], nextChunkTag, filteredChunks);
+            }
+        }
+
+        return filteredChunks;
     }
 
 }

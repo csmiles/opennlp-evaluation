@@ -1,6 +1,7 @@
 package csmiles.opennlp;
 
 import com.google.common.collect.Lists;
+import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
@@ -27,7 +28,8 @@ public class PosIntegrationTest {
         SentenceModel sentenceModel = new SentenceModel(res("/csmiles/opennlp/models/en-sent.bin"));
         TokenizerModel tokenModel = new TokenizerModel(res("/csmiles/opennlp/models/en-token.bin"));
         POSModel posModel = new POSModel(res("/csmiles/opennlp/models/en-pos-perceptron.bin"));
-        chunker = new Chunker(sentenceModel, tokenModel, posModel);
+        ChunkerModel chunkerModel = new ChunkerModel(res("/csmiles/opennlp/models/en-chunker.bin"));
+        chunker = new Chunker(sentenceModel, tokenModel, posModel, chunkerModel);
     }
 
     private InputStream res(String res) {
@@ -65,6 +67,24 @@ public class PosIntegrationTest {
 
         ArrayList<String> expected = Lists.newArrayList("Jack", "Jill");
         assertEquals(expected, nouns);
+    }
+
+    @Test
+    public void getChunk_JackAndJill_NounPhrase() throws Exception {
+        String doc = "Jack and Jill went up the hill to fetch a pail of water.";
+        List<Chunk> chunks = chunker.chunk(doc);
+        PartsOfSpeech pos = new PartsOfSpeech(chunks);
+        List<List<String>> phrases = pos.getChunk("NP");
+
+        ArrayList<String> expected;
+        expected = Lists.newArrayList("Jack", "and", "Jill");
+        assertEquals(expected, phrases.get(0));
+        expected = Lists.newArrayList("the", "hill");
+        assertEquals(expected, phrases.get(1));
+        expected = Lists.newArrayList("a", "pail");
+        assertEquals(expected, phrases.get(2));
+        expected = Lists.newArrayList("water");
+        assertEquals(expected, phrases.get(3));
     }
 
 }

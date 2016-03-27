@@ -12,10 +12,12 @@ public class Chunk {
 
     public String[] tokens;
     public String[] posTags;
+    public String[] chunkTags;
 
-    public Chunk(String[] tokens, String[] posTags) {
+    public Chunk(String[] tokens, String[] posTags, String[] chunkTags) {
         this.tokens = tokens;
         this.posTags = posTags;
+        this.chunkTags = chunkTags;
     }
 
 }

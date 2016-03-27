@@ -1,6 +1,8 @@
 package csmiles.opennlp;
 
 import com.google.common.collect.Lists;
+import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetector;
@@ -26,24 +28,29 @@ public class Chunker {
 
     private final POSModel posModel;
 
-    public Chunker(SentenceModel sentenceModel, TokenizerModel tokenizerModel, POSModel posModel) {
+    private final ChunkerModel chunkerModel;
+
+    public Chunker(SentenceModel sentenceModel, TokenizerModel tokenizerModel, POSModel posModel, ChunkerModel chunkerModel) {
         this.sentenceModel = sentenceModel;
         this.tokenizerModel = tokenizerModel;
         this.posModel = posModel;
+        this.chunkerModel = chunkerModel;
     }
 
     public List<Chunk> chunk(String doc) {
         SentenceDetector sentenceDetector = new SentenceDetectorME(sentenceModel);
         TokenizerME tokenizer = new TokenizerME(tokenizerModel);
         POSTaggerME tagger = new POSTaggerME(posModel);
+        ChunkerME chunker = new ChunkerME(chunkerModel);
 
         List<Chunk> chunks = Lists.newArrayList();
         String[] sentences = sentenceDetector.sentDetect(doc);
         for (String sentence : sentences) {
             String[] tokens = tokenizer.tokenize(sentence);
-            String[] tags = tagger.tag(tokens);
+            String[] posTags = tagger.tag(tokens);
+            String[] chunkTags = chunker.chunk(tokens, posTags);
 
-            Chunk chunk = new Chunk(tokens, tags);
+            Chunk chunk = new Chunk(tokens, posTags, chunkTags);
             chunks.add(chunk);
         }
 
